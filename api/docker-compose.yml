@@ -1,0 +1,144 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: twinboss_traefik
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.filename=/etc/traefik/dynamic/domains.yml
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --api.dashboard=true
+      - --log.level=INFO
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8081:8080"
+    volumes:
+      - ./config/traefik:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
+      - default
+
+  postgres:
+    image: postgres:16
+    container_name: mcp_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mcpuser
+      POSTGRES_PASSWORD: mcppass
+      POSTGRES_DB: mcpdb
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - default
+
+  redis:
+    image: redis:7-alpine
+    container_name: twinboss_redis
+    restart: unless-stopped
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - default
+
+  minio:
+    image: minio/minio:RELEASE.2024-09-22T00-00-00Z
+    container_name: twinboss_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./data/minio:/data
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    networks:
+      - default
+
+  mcpjungle:
+    image: mcpjungle/mcpjungle:latest
+    container_name: mcpjungle
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://mcpuser:mcppass@postgres:5432/mcpdb
+    volumes:
+      - ./config/mcpjungle:/app/config
+    ports:
+      - "4000:4000"
+    networks:
+      - default
+
+  fastmcp:
+    image: ghcr.io/fastmcp/fastmcp:latest
+    container_name: fastmcp
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+    volumes:
+      - ./config/fastmcp:/app/config
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+
+  docker-mcp:
+    image: ghcr.io/quantgeekdev/docker-mcp:latest
+    container_name: docker_mcp
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8090:8090"
+    networks:
+      - default
+
+  twinboss_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: twinboss_api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      LOCAL_API_KEY: ${LOCAL_API_KEY:-local-dev-key-123}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DOMAINS: ${DOMAINS:-}
+      TB_DATA_DIR: /app/runtime
+      TB_STATE_FILE: /app/runtime/state.json
+      TRAEFIK_DYNAMIC_FILE: /etc/traefik/dynamic/domains.yml
+    volumes:
+      - ./runtime:/app/runtime
+      - ./config/traefik/dynamic:/etc/traefik/dynamic
+    ports:
+      - "9000:9000"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.twinboss.rule=Host(`localhost`)
+      - traefik.http.routers.twinboss.entrypoints=web
+      - traefik.http.services.twinboss.loadbalancer.server.port=9000
+    command: uvicorn app:app --host 0.0.0.0 --port 9000
+    networks:
+      - proxy
+      - default
+
+networks:
+  default:
+    name: twinboss_internal
+  proxy:
+    name: twinboss_proxy

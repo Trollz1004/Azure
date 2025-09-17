@@ -1,0 +1,78 @@
+# =========================
+# ENVIRONMENT + SECRETS
+# =========================
+config.env
+.env
+*.env
+.env.local
+.env.*.local
+
+# =========================
+# SYSTEM / EDITOR FILES
+# =========================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# VS Code
+.vscode/
+.history/
+*.code-workspace
+
+# =========================
+# PYTHON
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# =========================
+# NODE / JAVASCRIPT
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# =========================
+# DOCKER / COMPOSE
+# =========================
+*.pid
+*.seed
+*.bak
+*.swp
+*.swo
+.docker/
+docker-compose.override.yml
+
+# =========================
+# LOGS / TEMP
+# =========================
+*.log
+logs/
+*.tmp
+*.temp
+tmp/
+temp/
+.cache/
+coverage/
+
+# =========================
+# LOCAL RUNTIME STATE
+# =========================
+runtime/
+data/
+config/traefik/dynamic/domains.yml

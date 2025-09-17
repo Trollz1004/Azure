@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AiDoesitAll.Org | Twin Boss Agent Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100">
+  <div class="flex h-screen">
+    <!-- Main -->
+    <main class="flex-1 p-4 space-y-4 overflow-auto">
+      <h1 class="text-3xl font-black">Twin Boss Agent</h1>
+      <section class="bg-gray-800 rounded-xl p-4">
+        <h2 class="text-xl font-bold mb-2">Run Twin Response</h2>
+        <div class="flex gap-2">
+          <input id="bizQuery" class="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2" placeholder="Business query"/>
+          <button id="runTwin" class="bg-blue-600 hover:bg-blue-700 rounded px-4 py-2">Run</button>
+        </div>
+        <pre id="twinResult" class="mt-4 text-sm bg-black/60 p-3 rounded max-h-80 overflow-auto"></pre>
+      </section>
+
+      <section class="grid md:grid-cols-2 gap-4">
+        <div class="bg-gray-800 rounded-xl p-4">
+          <h2 class="text-xl font-bold">Deploy Fundraising Solution</h2>
+          <button id="deployFundraise" class="mt-2 bg-green-600 hover:bg-green-700 rounded px-4 py-2">Deploy</button>
+          <pre id="fundResult" class="mt-3 text-sm bg-black/60 p-3 rounded max-h-64 overflow-auto"></pre>
+        </div>
+        <div class="bg-gray-800 rounded-xl p-4">
+          <h2 class="text-xl font-bold">Create New Agent Instantly</h2>
+          <div class="flex gap-2">
+            <input id="newAgentName" class="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2" placeholder="agent name"/>
+            <button id="createAgent" class="bg-purple-600 hover:bg-purple-700 rounded px-4 py-2">Create</button>
+          </div>
+          <pre id="createResult" class="mt-3 text-sm bg-black/60 p-3 rounded max-h-64 overflow-auto"></pre>
+        </div>
+      </section>
+
+      <section class="bg-gray-800 rounded-xl p-4">
+        <h2 class="text-xl font-bold">Integrate + Admin Automations</h2>
+        <div class="flex gap-2">
+          <button id="integrateBiz" class="bg-teal-600 hover:bg-teal-700 rounded px-4 py-2">Integrate with Business</button>
+          <button id="adminTasks" class="bg-amber-600 hover:bg-amber-700 rounded px-4 py-2">Automate Admin Tasks</button>
+        </div>
+        <pre id="opsResult" class="mt-3 text-sm bg-black/60 p-3 rounded max-h-64 overflow-auto"></pre>
+      </section>
+    </main>
+
+    <!-- Side Panel -->
+    <aside class="w-96 border-l border-gray-800 bg-gray-950 p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold">Real‑Time Previews</h2>
+        <span class="text-xs text-gray-400">/previews/stream</span>
+      </div>
+      <div id="previewLog" class="text-xs bg-black/70 rounded p-3 h-[85vh] overflow-auto font-mono"></div>
+    </aside>
+  </div>
+
+  <script>
+    const apiKey = 'local-dev-key-123';
+    const log = (el, msg) => {
+      const div = document.createElement('div');
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      el.prepend(div);
+    };
+
+    // SSE stream for previews
+    const previewEl = document.getElementById('previewLog');
+    const es = new EventSource('/previews/stream');
+    es.onmessage = (e)=> log(previewEl, e.data);
+    es.onerror = ()=> log(previewEl, 'stream error');
+
+    document.getElementById('runTwin').onclick = async () => {
+      const q = document.getElementById('bizQuery').value.trim();
+      const r = await fetch('/agents/twin/execute', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','x-api-key': apiKey},
+        body: JSON.stringify({ query: q })
+      });
+      document.getElementById('twinResult').textContent = await r.text();
+    };
+
+    document.getElementById('deployFundraise').onclick = async () => {
+      const r = await fetch('/fundraising/deploy', { method:'POST', headers:{'x-api-key': apiKey}});
+      document.getElementById('fundResult').textContent = await r.text();
+    };
+
+    document.getElementById('createAgent').onclick = async () => {
+      const n = document.getElementById('newAgentName').value.trim();
+      const r = await fetch('/agents/create', {
+        method:'POST', headers:{'Content-Type':'application/json','x-api-key': apiKey},
+        body: JSON.stringify({ name: n })
+      });
+      document.getElementById('createResult').textContent = await r.text();
+    };
+
+    document.getElementById('integrateBiz').onclick = async () => {
+      const r = await fetch('/business/integrate', { method:'POST', headers:{'x-api-key': apiKey}});
+      document.getElementById('opsResult').textContent = await r.text();
+    };
+
+    document.getElementById('adminTasks').onclick = async () => {
+      const r = await fetch('/admin/automate', { method:'POST', headers:{'x-api-key': apiKey}});
+      document.getElementById('opsResult').textContent = await r.text();
+    };
+  </script>
+</body>
+</html>
