@@ -1,0 +1,44 @@
+# Ignore VCS and editor files
+.git/
+.gitignore
+.gitattributes
+.vscode/
+*.code-workspace
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Env / secrets (never bake into images)
+.env
+.env.*
+
+# Python artifacts
+**/__pycache__/
+**/*.py[cod]
+api/.venv/
+venv/
+
+# Node / web build artifacts (if present)
+node_modules/
+**/node_modules/
+dist/
+build/
+.cache/
+
+# Logs / temp
+*.log
+logs/
+*.tmp
+*.temp
+
+# Local runtime data (mounted at runtime)
+api/runtime/
+api/data/
+api/config/traefik/acme.json
+
+# Tests and docs (not needed in runtime image)
+tests/
+**/tests/
+**/*.spec.*
+**/*.test.*

@@ -103,42 +103,45 @@ services:
     ports:
       - "8090:8090"
     networks:
-      - default
-
-  twinboss_api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: twinboss_api
-    restart: unless-stopped
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      LOCAL_API_KEY: ${LOCAL_API_KEY:-local-dev-key-123}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      DOMAINS: ${DOMAINS:-}
-      TB_DATA_DIR: /app/runtime
-      TB_STATE_FILE: /app/runtime/state.json
-      TRAEFIK_DYNAMIC_FILE: /etc/traefik/dynamic/domains.yml
-    volumes:
-      - ./runtime:/app/runtime
-      - ./config/traefik/dynamic:/etc/traefik/dynamic
-    ports:
-      - "9000:9000"
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.twinboss.rule=Host(`localhost`)
-      - traefik.http.routers.twinboss.entrypoints=web
-      - traefik.http.services.twinboss.loadbalancer.server.port=9000
-    command: uvicorn app:app --host 0.0.0.0 --port 9000
+      - default      - traefik.enable=true
+      - traefik.http.routers.api-web.rule=Host(`${API_HOST:-localhost}`)
+      - traefik.http.routers.api-web.entrypoints=web
+      - traefik.http.routers.api-web.middlewares=redirect-to-https@docker
+      - traefik.http.routers.api-secure.rule=Host(`${API_HOST:-localhost}`)
+      - traefik.http.routers.api-secure.entrypoints=websecure
+      - traefik.http.routers.api-secure.tls=true
+      - traefik.http.routers.api-secure.tls.certresolver=le
+      - traefik.http.services.api.loadbalancer.server.port=9000
+ uvicorn app:app --host 0.0.0.0 --port 9000
     networks:
       - proxy
       - default
 
+  site:
+    image: nginx:alpine
+    container_name: twinboss_site
+    restart: unless-stopped
+    volumes:
+      - ../site:/usr/share/nginx/html:ro
+    ports:
+      - "8084:80"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.site-web.rule=Host(${SITE_HOST:-localhost})
+      - traefik.http.routers.site-web.entrypoints=web
+      - traefik.http.routers.site-web.middlewares=redirect-to-https@docker
+      - traefik.http.routers.site-secure.rule=Host(${SITE_HOST:-localhost})
+      - traefik.http.routers.site-secure.entrypoints=websecure
+      - traefik.http.routers.site-secure.tls=true
+      - traefik.http.routers.site-secure.tls.certresolver=le
+      - traefik.http.services.site.loadbalancer.server.port=80
+    networks:
+      - default
 networks:
   default:
     name: twinboss_internal
   proxy:
     name: twinboss_proxy
+
+
+

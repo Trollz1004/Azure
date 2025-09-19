@@ -1,0 +1,30 @@
+# VCS / editor
+.git/
+.gitignore
+.vscode/
+*.code-workspace
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+.pnpm-store/
+.yarn/
+.npm/
+
+# Build outputs
+build/
+dist/
+.cache/
+
+# Env / secrets
+.env
+.env.*
+
+# Logs / temp
+*.log
+logs/
+*.tmp
+*.temp

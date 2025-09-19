@@ -1,0 +1,41 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Git metadata
+.git/
+.gitignore
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+*.code-workspace
+
+# Logs / temp
+*.log
+logs/
+*.tmp
+*.temp
+
+# Secrets / env files (compose will read .env without baking it into image)
+.env
+.env.*
+
+# Traefik ACME store (mounted at runtime)
+config/traefik/acme.json
+
+# Local volumes (mounted at runtime)
+data/
+runtime/
+
+# Tests and dev-only assets
+/tests/

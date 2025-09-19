@@ -613,3 +613,39 @@ async def admin_automate(x_api_key: Optional[str] = Header(default=None)):
     for task in tasks:
         await publish(f"admin:{task}")
     return {"status": "ok", "tasks": tasks}
+
+# --- Payments: Square webhook ---
+import hmac as _hmac
+import base64 as _base64
+
+
+def verify_square_signature(secret: str, body: bytes, header_sig: str) -> bool:
+    try:
+        mac = _hmac.new(secret.encode('utf-8'), body, hashlib.sha256).digest()
+        expected = _base64.b64encode(mac).decode('utf-8')
+        # Square may send multiple signatures; compare safely
+        return _hmac.compare_digest(header_sig.strip(), expected.strip())
+    except Exception:
+        return False
+
+
+@app.post("/payments/square/webhook")
+async def square_webhook(request: Request):
+    raw = await request.body()
+    header_sig = request.headers.get('x-square-hmacsha256-signature', '')
+    secret = os.getenv('SQUARE_WEBHOOK_SECRET', '')
+    ok = True
+    if secret:
+        ok = verify_square_signature(secret, raw, header_sig)
+    event_json = {}
+    try:
+        event_json = json.loads(raw.decode('utf-8'))
+    except Exception:
+        pass
+    if not ok:
+        await publish("payments:square:invalid-signature")
+        return JSONResponse({"ok": False, "reason": "invalid-signature"}, status_code=400)
+    # Minimal event routing; extend as needed
+    event_type = (event_json.get('type') or '').lower()
+    await publish(f"payments:square:event:{event_type}")
+    return {"ok": True}
