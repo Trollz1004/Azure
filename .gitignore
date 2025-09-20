@@ -6,5 +6,22 @@ __pycache__/
 *.log
 .vscode/
 .DS_Store
+.venv/
+venv/
+.pytest_cache/
+*.pyc
+__pycache__/
+.coverage
+htmlcov/
+.tox/
+.cache/
+nosetests.xml
+coverage.xml
+dist/
+build/
+*.egg-info/
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
 api/.venv/

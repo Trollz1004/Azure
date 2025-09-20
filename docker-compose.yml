@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  twinboss_api:
+    build: ./api
+    container_name: twinboss_api
+    restart: unless-stopped
+    ports:
+      - "8011:8011"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - LOCAL_API_KEY=${LOCAL_API_KEY:-local-dev-key-123}
+      - TB_DATA_DIR=/app/data
+      - TB_STATE_FILE=/app/data/state.json
+      - DOMAINS=${DOMAINS:-localhost}
+    volumes:
+      - ./data:/app/data
+      - ./api:/app
+    working_dir: /app
+    command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8011", "--reload"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8011/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  twinboss_web:
+    image: node:18-alpine
+    container_name: twinboss_web
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - API_BASE=http://twinboss_api:8011
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: ["npm", "start"]
+    depends_on:
+      - twinboss_api
+
+  nginx:
+    image: nginx:alpine
+    container_name: twinboss_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./web:/usr/share/nginx/html/web:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - twinboss_api
+      - twinboss_web
+
+  redis:
+    image: redis:7-alpine
+    container_name: twinboss_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: twinboss_network

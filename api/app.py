@@ -614,6 +614,115 @@ async def admin_automate(x_api_key: Optional[str] = Header(default=None)):
         await publish(f"admin:{task}")
     return {"status": "ok", "tasks": tasks}
 
+# --- Enhanced AI and Automation Features ---
+class AIRequest(BaseModel):
+    query: str
+    service: str = Field(default="openai")
+    context: Optional[Dict[str, Any]] = None
+
+class MarketingRequest(BaseModel):
+    campaign_type: str
+    target_audience: str
+    content_type: str = Field(default="email")
+
+class PrivacyRequest(BaseModel):
+    user_id: str
+    action: str  # "export" or "delete"
+
+@app.post("/ai/generate")
+async def ai_generate(body: AIRequest, x_api_key: Optional[str] = Header(default=None)):
+    auth(x_api_key)
+    await publish(f"ai:generate:{body.service}")
+    
+    # Mock AI generation - replace with actual AI service calls
+    response = f"AI response using {body.service} for query: {body.query[:50]}..."
+    
+    return {
+        "query": body.query,
+        "service": body.service,
+        "response": response,
+        "timestamp": time.time(),
+        "context": body.context
+    }
+
+@app.post("/marketing/create")
+async def marketing_create(body: MarketingRequest, x_api_key: Optional[str] = Header(default=None)):
+    auth(x_api_key)
+    await publish(f"marketing:create:{body.campaign_type}")
+    
+    # Mock marketing content generation
+    content = f"Marketing {body.content_type} for {body.target_audience}: {body.campaign_type} campaign content"
+    
+    return {
+        "campaign_type": body.campaign_type,
+        "target_audience": body.target_audience,
+        "content": content,
+        "created_at": datetime.now().isoformat(),
+        "status": "generated"
+    }
+
+@app.post("/privacy/request")
+async def privacy_request(body: PrivacyRequest, x_api_key: Optional[str] = Header(default=None)):
+    auth(x_api_key)
+    await publish(f"privacy:{body.action}:{body.user_id}")
+    
+    if body.action == "export":
+        # Mock data export
+        user_data = {
+            "user_id": body.user_id,
+            "exported_at": datetime.now().isoformat(),
+            "data": {"profile": "sample_data", "interactions": []}
+        }
+        return {"status": "exported", "data": user_data}
+    
+    elif body.action == "delete":
+        # Mock data deletion
+        return {
+            "status": "deleted",
+            "user_id": body.user_id,
+            "deleted_at": datetime.now().isoformat()
+        }
+    
+    return {"status": "error", "message": "Invalid action"}
+
+@app.get("/analytics/dashboard")
+async def analytics_dashboard(x_api_key: Optional[str] = Header(default=None)):
+    auth(x_api_key)
+    await publish("analytics:dashboard:accessed")
+    
+    # Mock analytics data
+    return {
+        "metrics": {
+            "active_users": 1250,
+            "total_queries": 5680,
+            "success_rate": 0.94,
+            "avg_response_time": 0.8
+        },
+        "charts": {
+            "usage_trend": [100, 120, 110, 150, 180, 200, 185],
+            "service_breakdown": {"openai": 45, "gemini": 30, "stability": 25}
+        },
+        "timestamp": time.time()
+    }
+
+@app.post("/automation/workflow")
+async def automation_workflow(x_api_key: Optional[str] = Header(default=None)):
+    auth(x_api_key)
+    await publish("automation:workflow:triggered")
+    
+    # Mock workflow automation
+    workflows = [
+        {"id": 1, "name": "Customer Onboarding", "status": "active"},
+        {"id": 2, "name": "Content Generation", "status": "scheduled"},
+        {"id": 3, "name": "Data Backup", "status": "completed"}
+    ]
+    
+    return {
+        "workflows": workflows,
+        "total_active": len([w for w in workflows if w["status"] == "active"]),
+        "last_run": datetime.now().isoformat()
+    }
+
 # --- Payments: Square webhook ---
 import hmac as _hmac
 import base64 as _base64
