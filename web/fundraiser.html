@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Dual-Impact Fundraising Campaign</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 400px; margin: auto; height: 320px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .tab-button.active { border-color: #f59e0b; background-color: #fffbeb; color: #b45309; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-amber-50 text-slate-800">
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-emerald-800">OnlineRecycle.org</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#impact" class="text-slate-600 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium">Dual Impact</a>
+                        <a href="#plan" class="text-slate-600 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium">Our Plan</a>
+                        <a href="#trust" class="text-slate-600 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium">Trust</a>
+                        <a href="#donate" class="bg-amber-500 text-white hover:bg-amber-600 px-3 py-2 rounded-md text-sm font-medium shadow">Donate Now</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <section id="hero" class="py-20 md:py-28">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-emerald-900">Recycle for a <span class="text-amber-600">Cause</span></h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-slate-700">Support our recycling initiative and charitable giving through your donations.</p>
+                <div class="mt-10">
+                    <a href="#donate" class="inline-block bg-amber-500 text-white font-bold text-lg px-8 py-4 rounded-lg shadow-lg hover:bg-amber-600">Donate Now</a>
+                </div>
+            </div>
+        </section>
+        <section id="impact" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-emerald-800">Where Your Money Goes</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Your donation supports local recycling and charitable programs.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="chart-container">
+                        <canvas id="donationSplitChart"></canvas>
+                    </div>
+                    <div id="donate" class="space-y-4">
+                        <h3 class="text-2xl font-semibold text-center lg:text-left text-emerald-900">Choose Your Impact</h3>
+                        <div class="border-2 border-amber-200 p-4 rounded-lg bg-amber-50 hover:border-amber-400 hover:shadow-md">
+                            <h4 class="font-bold text-lg text-amber-800">$25 - Recycler</h4>
+                            <p class="text-slate-600 mt-1">Support local recycling initiatives.</p>
+                        </div>
+                        <div class="border-2 border-amber-200 p-4 rounded-lg bg-amber-50 hover:border-amber-400 hover:shadow-md">
+                            <h4 class="font-bold text-lg text-amber-800">$75 - Sustainer</h4>
+                            <p class="text-slate-600 mt-1">Fund recycling operations and research.</p>
+                        </div>
+                        <div class="border-2 border-amber-200 p-4 rounded-lg bg-amber-50 hover:border-amber-400 hover:shadow-md">
+                            <h4 class="font-bold text-lg text-amber-800">$250 - Champion</h4>
+                            <p class="text-slate-600 mt-1">Drive sustainability and community programs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script>
+        const ctx = document.getElementById('donationSplitChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Local Recycling', 'Charitable Programs'],
+                datasets: [{
+                    data: [50, 50],
+                    backgroundColor: ['#10b981', '#f59e0b'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } }
+            }
+        });
+    </script>
+</body>
+</html>
